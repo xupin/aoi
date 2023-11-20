@@ -3,24 +3,16 @@ package grid
 import (
 	"fmt"
 	"strings"
+
+	"github.com/xupin/aoi/entity"
 )
 
-type Player struct {
-	Id    uint64
-	Name  string
-	X     uint
-	Y     uint
-	Model string // w、m、wm （Watcher、Marker）
-}
-
 type Aoi struct {
-	Players      map[uint64]*Player
-	PlayersX     map[uint]map[uint64]*Player
-	PlayersY     map[uint]map[uint64]*Player
+	Players      map[uint32]*entity.Player
+	PlayersX     map[uint]map[uint32]*entity.Player
+	PlayersY     map[uint]map[uint32]*entity.Player
 	VisibleRange uint
 }
-
-type Callback = func(p1, p2 *Player)
 
 const (
 	AOI_WATCHER = "w"
@@ -33,14 +25,23 @@ const (
 	MAP_COLS = 20 // x
 )
 
-func (r *Aoi) Enter(p *Player, f Callback) map[uint64]*Player {
+func NewAoi() *Aoi {
+	return &Aoi{
+		Players:      make(map[uint32]*entity.Player, 0),
+		PlayersX:     make(map[uint]map[uint32]*entity.Player, 0),
+		PlayersY:     make(map[uint]map[uint32]*entity.Player, 0),
+		VisibleRange: 5,
+	}
+}
+
+func (r *Aoi) Enter(p *entity.Player, f entity.Callback) map[uint32]*entity.Player {
 	r.Players[p.Id] = p
 	if _, ok := r.PlayersX[p.X]; !ok {
-		r.PlayersX[p.X] = make(map[uint64]*Player)
+		r.PlayersX[p.X] = make(map[uint32]*entity.Player)
 	}
 	r.PlayersX[p.X][p.Id] = p
 	if _, ok := r.PlayersY[p.Y]; !ok {
-		r.PlayersY[p.Y] = make(map[uint64]*Player)
+		r.PlayersY[p.Y] = make(map[uint32]*entity.Player)
 	}
 	r.PlayersY[p.Y][p.Id] = p
 	fmt.Printf("玩家[%s]进入地图 x%d,y%d \n", p.Name, p.X, p.Y)
@@ -56,7 +57,7 @@ func (r *Aoi) Enter(p *Player, f Callback) map[uint64]*Player {
 	return nil
 }
 
-func (r *Aoi) Move(p *Player, x, y uint, move, leave, enter Callback) []*Player {
+func (r *Aoi) Move(p *entity.Player, x, y uint, move, leave, enter entity.Callback) []*entity.Player {
 	fmt.Printf("玩家[%s]移动坐标 x%d,y%d ->  x%d,y%d \n", p.Name, p.X, p.Y, x, y)
 	// 获取当前坐标视野内的观察者、被观察者
 	bWatchers := r.findNeighbors(p, AOI_WATCHER)
@@ -85,7 +86,7 @@ func (r *Aoi) Move(p *Player, x, y uint, move, leave, enter Callback) []*Player 
 		}
 	}
 	// 新的视野邻居
-	players := []*Player{}
+	players := []*entity.Player{}
 	if r.IsWatcher(p) {
 		for id := range aMarkers {
 			if p1, ok := bMarkers[id]; !ok {
@@ -96,7 +97,7 @@ func (r *Aoi) Move(p *Player, x, y uint, move, leave, enter Callback) []*Player 
 	return players
 }
 
-func (r *Aoi) Leave(p *Player, f Callback) {
+func (r *Aoi) Leave(p *entity.Player, f entity.Callback) {
 	delete(r.Players, p.Id)
 	delete(r.PlayersX[p.X], p.Id)
 	delete(r.PlayersY[p.Y], p.Id)
@@ -106,26 +107,26 @@ func (r *Aoi) Leave(p *Player, f Callback) {
 	}
 }
 
-func (r *Aoi) Broadcast(p *Player, f Callback) {
+func (r *Aoi) Broadcast(p *entity.Player, f entity.Callback) {
 	players := r.findNeighbors(p, AOI_MARKER)
 	for _, p1 := range players {
 		f(p, p1)
 	}
 }
 
-func (r *Aoi) Get(id uint64) *Player {
+func (r *Aoi) Get(id uint32) *entity.Player {
 	return r.Players[id]
 }
 
-func (r *Aoi) IsMarker(p *Player) bool {
+func (r *Aoi) IsMarker(p *entity.Player) bool {
 	return strings.Contains(p.Model, "m")
 }
 
-func (r *Aoi) IsWatcher(p *Player) bool {
+func (r *Aoi) IsWatcher(p *entity.Player) bool {
 	return strings.Contains(p.Model, "w")
 }
 
-func (r *Aoi) findNeighbors(p *Player, model string) map[uint64]*Player {
+func (r *Aoi) findNeighbors(p *entity.Player, model string) map[uint32]*entity.Player {
 	// 地图边界
 	xMin := int64(p.X - r.VisibleRange)
 	if xMin < 0 {
@@ -136,7 +137,7 @@ func (r *Aoi) findNeighbors(p *Player, model string) map[uint64]*Player {
 		xMax = MAP_ROWS
 	}
 	// 感兴趣的邻居
-	neighbors := map[uint64]*Player{}
+	neighbors := make(map[uint32]*entity.Player, 0)
 	for x := uint(xMin); x < uint(xMax); x++ {
 		players, ok := r.PlayersX[x]
 		if !ok {

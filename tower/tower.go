@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+
+	"github.com/xupin/aoi/entity"
 )
 
 type Tower struct {
@@ -11,16 +13,8 @@ type Tower struct {
 	Name     string
 	X        uint
 	Y        uint
-	Watchers map[uint64]*Player
-	Markers  map[uint64]*Player
-}
-
-type Player struct {
-	Id      uint64
-	Name    string
-	X       uint
-	Y       uint
-	Players map[uint64]*Player
+	Watchers map[uint32]*entity.Player
+	Markers  map[uint32]*entity.Player
 }
 
 type Aoi struct {
@@ -30,15 +24,22 @@ type Aoi struct {
 	VisibleRange uint
 }
 
-type Callback = func(p1, p2 *Player)
-
 const (
 	// 地图尺寸
 	MAP_ROWS = 50 // y
 	MAP_COLS = 50 // x
 )
 
-func (r *Aoi) Init() {
+func NewAoi() *Aoi {
+	return &Aoi{
+		Towers:       make(map[uint]map[uint]*Tower, 0),
+		TowerWidth:   5,
+		TowerHeight:  5,
+		VisibleRange: 5,
+	}
+}
+
+func (r *Aoi) Start() {
 	// 计算灯塔数量
 	maxX := uint(math.Ceil(float64(MAP_COLS) / float64(r.TowerWidth)))
 	maxY := uint(math.Ceil(float64(MAP_ROWS) / float64(r.TowerHeight)))
@@ -53,8 +54,8 @@ func (r *Aoi) Init() {
 				Name:     name,
 				X:        x,
 				Y:        y,
-				Watchers: make(map[uint64]*Player, 0),
-				Markers:  make(map[uint64]*Player, 0),
+				Watchers: make(map[uint32]*entity.Player, 0),
+				Markers:  make(map[uint32]*entity.Player, 0),
 			}
 			// fmt.Printf("灯塔%d[%d,%d]加入 \n", id, x, y)
 			id++
@@ -62,7 +63,7 @@ func (r *Aoi) Init() {
 	}
 }
 
-func (r *Aoi) Enter(p *Player, f Callback) {
+func (r *Aoi) Enter(p *entity.Player, f entity.Callback) {
 	// 加入灯塔
 	tower := r.getTower(p.X, p.Y)
 	tower.Markers[p.Id] = p
@@ -86,7 +87,7 @@ func (r *Aoi) Enter(p *Player, f Callback) {
 	}
 }
 
-func (r *Aoi) Leave(p *Player, f Callback) {
+func (r *Aoi) Leave(p *entity.Player, f entity.Callback) {
 	// 离开灯塔
 	tower := r.getTower(p.X, p.Y)
 	tower.removeMarker(p)
@@ -106,7 +107,7 @@ func (r *Aoi) Leave(p *Player, f Callback) {
 	fmt.Printf("玩家[%s]离开地图 \n", p.Name)
 }
 
-func (r *Aoi) Move(p *Player, x, y uint, move, leave, enter Callback) {
+func (r *Aoi) Move(p *entity.Player, x, y uint, move, leave, enter entity.Callback) {
 	fmt.Printf("玩家[%s]移动坐标 x%d,y%d -> x%d,y%d \n", p.Name, p.X, p.Y, x, y)
 	// 离开、加入新的灯塔
 	bTower := r.getTower(p.X, p.Y)
@@ -155,22 +156,22 @@ func (r *Aoi) Move(p *Player, x, y uint, move, leave, enter Callback) {
 	}
 }
 
-func (r *Tower) addWatcher(p *Player) {
+func (r *Tower) addWatcher(p *entity.Player) {
 	r.Watchers[p.Id] = p
 	fmt.Printf("玩家[%s]关注灯塔[%d,%d] \n", p.Name, r.X, r.Y)
 }
 
-func (r *Tower) removeWatcher(p *Player) {
+func (r *Tower) removeWatcher(p *entity.Player) {
 	delete(r.Watchers, p.Id)
 	fmt.Printf("玩家[%s]不再关注灯塔[%d,%d] \n", p.Name, r.X, r.Y)
 }
 
-func (r *Tower) addMarker(p *Player) {
+func (r *Tower) addMarker(p *entity.Player) {
 	r.Markers[p.Id] = p
 	fmt.Printf("玩家[%s]加入灯塔[%d,%d] \n", p.Name, r.X, r.Y)
 }
 
-func (r *Tower) removeMarker(p *Player) {
+func (r *Tower) removeMarker(p *entity.Player) {
 	delete(r.Markers, p.Id)
 	fmt.Printf("玩家[%s]离开灯塔[%d,%d] \n", p.Name, r.X, r.Y)
 }
@@ -202,9 +203,9 @@ func (r *Aoi) TowersDiff(bTowers, aTowers []*Tower) []*Tower {
 	return towers
 }
 
-func (r *Aoi) PlayersDiff(bPlayers, aPlayers []*Player) []*Player {
-	players := make([]*Player, 0)
-	newPlayers := make(map[uint64]bool, 0)
+func (r *Aoi) PlayersDiff(bPlayers, aPlayers []*entity.Player) []*entity.Player {
+	players := make([]*entity.Player, 0)
+	newPlayers := make(map[uint32]bool, 0)
 	for _, player := range aPlayers {
 		newPlayers[player.Id] = true
 	}
@@ -255,9 +256,9 @@ func (r *Aoi) getWatchedTowers(x, y uint) []*Tower {
 	return towers
 }
 
-func (r *Aoi) getWatchers(x, y uint) []*Player {
+func (r *Aoi) getWatchers(x, y uint) []*entity.Player {
 	towers := r.getWatchedTowers(x, y)
-	players := make([]*Player, 0)
+	players := make([]*entity.Player, 0)
 	for _, tower := range towers {
 		for _, player := range tower.Watchers {
 			players = append(players, player)
