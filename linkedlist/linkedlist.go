@@ -76,6 +76,7 @@ func (r *Aoi) Leave(p *entity.Player, f entity.Callback) {
 	for _, p1 := range players {
 		f(p, p1.player)
 	}
+	r.Remove(node.Id)
 }
 
 func (r *Aoi) Add(player *entity.Player) *node {

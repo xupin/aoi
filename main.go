@@ -41,8 +41,8 @@ func listTest() {
 	p4 := &entity.Player{
 		Id:    4,
 		Name:  "pp4",
-		X:     12,
-		Y:     5,
+		X:     1,
+		Y:     21,
 		Model: "wm",
 	}
 	aoi.Enter(p3, func(p1, p2 *entity.Player) {
@@ -57,7 +57,6 @@ func listTest() {
 	aoi.Enter(p1, func(p1, p2 *entity.Player) {
 		fmt.Printf("玩家[%s]遇见玩家[%s] \n", p1.Name, p2.Name)
 	})
-
 	aoi.Move(p4, 4, 4, func(p1, p2 *entity.Player) {
 		fmt.Printf("玩家[%s]移动坐标，通知玩家[%s] \n", p1.Name, p2.Name)
 	},
@@ -67,10 +66,10 @@ func listTest() {
 		func(p1, p2 *entity.Player) {
 			fmt.Printf("玩家[%s]进入视野，通知玩家[%s] \n", p1.Name, p2.Name)
 		})
-	aoi.Leave(p4, func(p1, p2 *entity.Player) {
-		fmt.Printf("玩家[%s]离开视野，通知玩家[%s] \n", p1.Name, p2.Name)
-	})
-	// aoi.PrintNode()
+	// aoi.Leave(p4, func(p1, p2 *entity.Player) {
+	// 	fmt.Printf("玩家[%s]离开视野，通知玩家[%s] \n", p1.Name, p2.Name)
+	// })
+	aoi.PrintNode()
 	// aoi.Remove(2)
 	// aoi.PrintNode()
 }
