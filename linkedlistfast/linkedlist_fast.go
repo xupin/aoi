@@ -139,6 +139,9 @@ func (r *Aoi) removeX(delNode *node) {
 			r.xList.head = delNode.xNext
 			r.xList.head.xPrev = nil
 		}
+	} else if delNode.xNext == nil { // 尾节点
+		delNode.xPrev.xNext = nil
+		r.xList.tail = delNode.xPrev
 	} else if delNode.xNext != nil {
 		delNode.xPrev.xNext = delNode.xNext
 		delNode.xNext.xPrev = delNode.xPrev
@@ -157,6 +160,9 @@ func (r *Aoi) removeY(delNode *node) {
 			r.yList.head = delNode.yNext
 			r.yList.head = nil
 		}
+	} else if delNode.yNext == nil { // 尾节点
+		delNode.yPrev.yNext = nil
+		r.yList.tail = delNode.yPrev
 	} else if delNode.yNext != nil {
 		delNode.yPrev.yNext = delNode.yNext
 		delNode.yNext.yPrev = delNode.yPrev
