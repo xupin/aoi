@@ -2,6 +2,7 @@ package linkedlistfast
 
 import (
 	"fmt"
+	"log"
 	"math"
 
 	"github.com/xupin/aoi/entity"
@@ -43,7 +44,7 @@ func NewAoi() *Aoi {
 
 func (r *Aoi) Enter(p *entity.Player, f entity.Callback) {
 	node := r.Add(p)
-	fmt.Printf("玩家[%s]进入地图 \n", p.Name)
+	log.Printf("玩家[%s]进入地图 \n", p.Name)
 	players := r.findNeighbors(node, "wm")
 	for _, p1 := range players {
 		f(p, p1.player)
@@ -56,7 +57,7 @@ func (r *Aoi) Move(p *entity.Player, x, y uint, move, leave, enter entity.Callba
 		return
 	}
 	p.X, p.Y = x, y
-	fmt.Printf("玩家[%s]移动坐标 x%d,y%d -> x%d,y%d \n", p.Name, p.X, p.Y, x, y)
+	log.Printf("玩家[%s]移动坐标 x%d,y%d -> x%d,y%d \n", p.Name, p.X, p.Y, x, y)
 	// 离开玩家视野
 	bPlayers := r.findNeighbors(node, "wm")
 	r.Remove(node.Id)
@@ -82,7 +83,7 @@ func (r *Aoi) Leave(p *entity.Player, f entity.Callback) {
 	if !ok {
 		return
 	}
-	fmt.Printf("玩家[%s]离开地图 \n", p.Name)
+	log.Printf("玩家[%s]离开地图 \n", p.Name)
 	players := r.findNeighbors(node, "wm")
 	for _, p1 := range players {
 		f(p, p1.player)
@@ -134,7 +135,7 @@ func (r *Aoi) removeX(delNode *node) {
 	// 根节点
 	if delNode.xPrev == nil {
 		if delNode.xNext == nil {
-			r.xList.head = nil
+			r.xList.head, r.xList.tail = nil, nil
 		} else {
 			r.xList.head = delNode.xNext
 			r.xList.head.xPrev = nil
@@ -155,7 +156,7 @@ func (r *Aoi) removeY(delNode *node) {
 	// 根节点
 	if delNode.yPrev == nil {
 		if delNode.yNext == nil {
-			r.yList = nil
+			r.yList.head, r.yList.tail = nil, nil
 		} else {
 			r.yList.head = delNode.yNext
 			r.yList.head = nil
@@ -213,6 +214,7 @@ func (r *Aoi) addX(targetNode *node) {
 		if prev != nil && slow == nil {
 			prev.xNext = targetNode
 			targetNode.xPrev = prev
+			r.xList.tail = targetNode
 		}
 		break
 	}
@@ -259,6 +261,7 @@ func (r *Aoi) addY(targetNode *node) {
 		if prev != nil && slow == nil {
 			prev.yNext = targetNode
 			targetNode.yPrev = prev
+			r.yList.tail = targetNode
 		}
 		break
 	}
@@ -267,16 +270,16 @@ func (r *Aoi) addY(targetNode *node) {
 func (r *Aoi) PrintNode() {
 	for cur := r.xList.head; cur != nil; cur = cur.xNext {
 		if cur.xNext == nil {
-			fmt.Print(cur.Id, "->", "nil\n")
+			log.Print(cur.Id, "->", "nil\n")
 		} else {
-			fmt.Print(cur.Id, "->")
+			log.Print(cur.Id, "->")
 		}
 	}
 	for cur := r.yList.head; cur != nil; cur = cur.yNext {
 		if cur.yNext == nil {
-			fmt.Print(cur.Id, "->", "nil\n")
+			log.Print(cur.Id, "->", "nil\n")
 		} else {
-			fmt.Print(cur.Id, "->")
+			log.Print(cur.Id, "->")
 		}
 	}
 }

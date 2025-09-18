@@ -1,7 +1,7 @@
 package grid
 
 import (
-	"fmt"
+	"log"
 	"strings"
 
 	"github.com/xupin/aoi/entity"
@@ -44,7 +44,7 @@ func (r *Aoi) Enter(p *entity.Player, f entity.Callback) map[uint32]*entity.Play
 		r.PlayersY[p.Y] = make(map[uint32]*entity.Player)
 	}
 	r.PlayersY[p.Y][p.Id] = p
-	fmt.Printf("玩家[%s]进入地图 x%d,y%d \n", p.Name, p.X, p.Y)
+	log.Printf("玩家[%s]进入地图 x%d,y%d \n", p.Name, p.X, p.Y)
 	// 如果玩家是被观察者，广播消息给视野内所有观察者
 	if r.IsMarker(p) {
 		r.Broadcast(p, f)
@@ -53,12 +53,12 @@ func (r *Aoi) Enter(p *entity.Player, f entity.Callback) map[uint32]*entity.Play
 	if r.IsWatcher(p) {
 		return r.findNeighbors(p, AOI_MARKER)
 	}
-	// fmt.Printf("内存[aoi] %d", unsafe.Sizeof(r))
+	// log.Printf("内存[aoi] %d", unsafe.Sizeof(r))
 	return nil
 }
 
 func (r *Aoi) Move(p *entity.Player, x, y uint, move, leave, enter entity.Callback) []*entity.Player {
-	fmt.Printf("玩家[%s]移动坐标 x%d,y%d ->  x%d,y%d \n", p.Name, p.X, p.Y, x, y)
+	log.Printf("玩家[%s]移动坐标 x%d,y%d ->  x%d,y%d \n", p.Name, p.X, p.Y, x, y)
 	// 获取当前坐标视野内的观察者、被观察者
 	bWatchers := r.findNeighbors(p, AOI_WATCHER)
 	bMarkers := r.findNeighbors(p, AOI_MARKER)

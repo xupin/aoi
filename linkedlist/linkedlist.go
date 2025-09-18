@@ -2,6 +2,7 @@ package linkedlist
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/xupin/aoi/entity"
 )
@@ -32,7 +33,7 @@ func NewAoi() *Aoi {
 
 func (r *Aoi) Enter(p *entity.Player, f entity.Callback) {
 	node := r.Add(p)
-	fmt.Printf("玩家[%s]进入地图 \n", p.Name)
+	log.Printf("玩家[%s]进入地图 \n", p.Name)
 	players := r.findNeighbors(node, "wm")
 	for _, p1 := range players {
 		f(p, p1.player)
@@ -45,7 +46,7 @@ func (r *Aoi) Move(p *entity.Player, x, y uint, move, leave, enter entity.Callba
 		return
 	}
 	p.X, p.Y = x, y
-	fmt.Printf("玩家[%s]移动坐标 x%d,y%d -> x%d,y%d \n", p.Name, p.X, p.Y, x, y)
+	log.Printf("玩家[%s]移动坐标 x%d,y%d -> x%d,y%d \n", p.Name, p.X, p.Y, x, y)
 	// 离开玩家视野
 	bPlayers := r.findNeighbors(node, "wm")
 	r.Remove(node.Id)
@@ -71,7 +72,7 @@ func (r *Aoi) Leave(p *entity.Player, f entity.Callback) {
 	if !ok {
 		return
 	}
-	fmt.Printf("玩家[%s]离开地图 \n", p.Name)
+	log.Printf("玩家[%s]离开地图 \n", p.Name)
 	players := r.findNeighbors(node, "wm")
 	for _, p1 := range players {
 		f(p, p1.player)
@@ -204,16 +205,16 @@ func (r *Aoi) addY(newNode *node) {
 func (r *Aoi) PrintNode() {
 	for cur := r.xList; cur != nil; cur = cur.xNext {
 		if cur.xNext == nil {
-			fmt.Print(cur.Id, "->", "nil\n")
+			log.Print(cur.Id, "->", "nil\n")
 		} else {
-			fmt.Print(cur.Id, "->")
+			log.Print(cur.Id, "->")
 		}
 	}
 	for cur := r.yList; cur != nil; cur = cur.yNext {
 		if cur.yNext == nil {
-			fmt.Print(cur.Id, "->", "nil\n")
+			log.Print(cur.Id, "->", "nil\n")
 		} else {
-			fmt.Print(cur.Id, "->")
+			log.Print(cur.Id, "->")
 		}
 	}
 }
