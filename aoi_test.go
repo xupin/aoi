@@ -1,4 +1,4 @@
-package main
+package aoi_test
 
 import (
 	"testing"
